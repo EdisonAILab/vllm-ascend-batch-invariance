@@ -112,3 +112,62 @@ enable_npu_batch_invariant_linear()
 The lightweight fix uses native CANN ops (no Triton), making it practical for
 production use. The Triton approach is useful for validation but impractical due
 to ~500x performance overhead on the Ascend Triton 3.2.0 backend.
+
+---
+
+## vLLM Results (GSM8K, TP=1)
+
+### Setup
+
+| Item | Details |
+|---|---|
+| vLLM | 0.11.0 with `vllm_ascend` platform plugin |
+| Inference | Offline `LLM.generate`, greedy (`temperature=0.0`), `enforce_eager=True` |
+| Prompts | 16 GSM8K test questions |
+| Max tokens | 32 generated tokens per prompt |
+| Test script | `test_vllm_gsm8k_batch_invariance_v2.py` |
+
+### Methodology
+
+1. Run each prompt individually (16 single-item batches) → single outputs.
+2. Run all 16 prompts together in one batch → batched outputs.
+3. Compare generated token IDs and logprobs between single and batched runs.
+
+### Results
+
+| Mode | Token Failures | Logprob Failures | Max Logprob Diff | Batch Invariant | Time (singles/batch) |
+|---|---|---|---|---|---|
+| Native (default) | 4/16 | 16/16 | 1.37475676 | **No** | 12.4s / 1.1s |
+| Native (prefix_caching=False) | 4/16 | 16/16 | 1.37475676 | **No** | 12.7s / 1.1s |
+| Lightweight fix + no prefix cache | 4/16 | 16/16 | 1.37475676 | **No** | 12.6s / 1.1s |
+
+All three modes produce **bit-for-bit identical results** — the `aten::linear` patch
+and prefix caching settings have **zero effect** on vLLM's batch invariance.
+
+### Analysis
+
+The vLLM non-invariance is **not caused by matmul kernel selection** (which the
+lightweight fix addresses). Instead, it originates from vLLM's scheduling layer:
+
+1. **Chunked prefill scheduling**: vLLM's V1 scheduler with `max_num_batched_tokens`
+   processes single-item and 16-item batches with different chunking decisions. This
+   changes which tokens are grouped together during prefill, altering computation order.
+
+2. **PagedAttention block allocation**: Different batch sizes lead to different KV cache
+   block layouts. The attention kernel reads from different memory locations depending
+   on block allocation.
+
+3. **Not prefix caching**: Disabling prefix caching had no effect, ruling it out as
+   a source of non-invariance.
+
+### Conclusion
+
+| Framework | Fix Effective | Root Cause |
+|---|---|---|
+| **HuggingFace** | **Yes** (bit-exact) | Matmul kernel selection (M-dependent gemv/gemm) |
+| **vLLM** | **No** | Scheduling layer (chunked prefill, PagedAttention) |
+
+The lightweight `aten::linear` fix fully resolves batch invariance for HuggingFace
+`AutoModelForCausalLM`, but vLLM requires fixes at the vLLM/vllm_ascend scheduling
+layer to achieve batch invariance. The matmul-level fix is necessary but not sufficient
+for vLLM.

@@ -137,37 +137,91 @@ to ~500x performance overhead on the Ascend Triton 3.2.0 backend.
 
 | Mode | Token Failures | Logprob Failures | Max Logprob Diff | Batch Invariant | Time (singles/batch) |
 |---|---|---|---|---|---|
-| Native (default) | 4/16 | 16/16 | 1.37475676 | **No** | 12.4s / 1.1s |
-| Native (prefix_caching=False) | 4/16 | 16/16 | 1.37475676 | **No** | 12.7s / 1.1s |
-| Lightweight fix + no prefix cache | 4/16 | 16/16 | 1.37475676 | **No** | 12.6s / 1.1s |
+| Native (default) | 4/16 | 16/16 | 1.37475676 | **No** | 11.8s / 1.2s |
+| Attention per-seq fix (on-disk) | 3/4* | 3/4* | 0.41310936 | **No** | — |
+| **`max_num_seqs=1`** | **0/16** | **0/16** | **0.00000000** | **Yes** | 11.8s / 12.1s |
 
-All three modes produce **bit-for-bit identical results** — the `aten::linear` patch
-and prefix caching settings have **zero effect** on vLLM's batch invariance.
+*Tested with 4 prompts / 4 tokens for the attention fix in isolation.
 
-### Analysis
+### Root Cause Analysis
 
-The vLLM non-invariance is **not caused by matmul kernel selection** (which the
-lightweight fix addresses). Instead, it originates from vLLM's scheduling layer:
+The vLLM non-invariance has **two layers of root causes**:
 
-1. **Chunked prefill scheduling**: vLLM's V1 scheduler with `max_num_batched_tokens`
-   processes single-item and 16-item batches with different chunking decisions. This
-   changes which tokens are grouped together during prefill, altering computation order.
+#### 1. Attention kernel mismatch (scheduler-level)
 
-2. **PagedAttention block allocation**: Different batch sizes lead to different KV cache
-   block layouts. The attention kernel reads from different memory locations depending
-   on block allocation.
+When multiple sequences are batched, vLLM's V1 scheduler makes different scheduling
+decisions than when processing sequences individually:
 
-3. **Not prefix caching**: Disabling prefix caching had no effect, ruling it out as
-   a source of non-invariance.
+- **Single prompt**: Prefill → `PrefillNoCache` → `_npu_flash_attention`, Decode → `DecodeOnly` → `_npu_paged_attention`
+- **Batch of N prompts**: Scheduler chunks across steps. Step 1 prefills some prompts.
+  Step 2 mixes decode + new prefills → `ChunkedPrefill` → `npu_fused_infer_attention_score`
+
+These are **three different NPU kernels** (`_npu_flash_attention`, `_npu_paged_attention`,
+`npu_fused_infer_attention_score`) that produce numerically different results for the
+same mathematical operation. This accounts for ~40% of the observed non-invariance.
+
+The on-disk attention fix (`patch_v3.py`) splits `ChunkedPrefill` batches into
+per-sequence calls using the same kernel as single-prompt mode, reducing max logprob
+diff from 0.685 to 0.413.
+
+#### 2. Matmul M-dimension sensitivity (model-level)
+
+vLLM packs all tokens from all sequences into a single `[total_tokens, hidden_size]`
+tensor and processes them through the model's linear projections together. CANN matmul
+selects different algorithms based on the M dimension (total_tokens), producing
+different results for the same token when it appears in different batch sizes.
+
+- **Single prompt** (65 tokens): `F.linear` with M=65
+- **Batch of 4 prompts** (119 tokens): `F.linear` with M=119
+
+This produces different Q/K/V values from the same input, which propagates through
+all subsequent layers.
+
+#### 3. Not caused by prefix caching
+
+Disabling prefix caching (`enable_prefix_caching=False`) and chunked prefill
+(`enable_chunked_prefill=False`) had no effect, as the scheduler still chunks
+multiple sequences across scheduling steps.
+
+### Fix: `max_num_seqs=1`
+
+Setting `max_num_seqs=1` forces vLLM's scheduler to process at most one sequence
+per scheduling step. This ensures:
+
+1. Every prefill step uses `PrefillNoCache` with exactly one sequence
+2. Every decode step uses `DecodeOnly` with exactly one sequence
+3. The model's linear projections always see M=seq_len (same as single-prompt mode)
+4. The same NPU kernels and CANN algorithms are used regardless of batch composition
+
+```python
+from vllm import LLM, SamplingParams
+
+llm = LLM(model=MODEL_PATH, dtype="bfloat16", enforce_eager=True,
+          max_num_seqs=1)  # <-- batch invariant mode
+# All prompts now produce bit-exact identical results
+out = llm.generate(prompts, SamplingParams(temperature=0.0, max_tokens=32))
+```
+
+### Performance
+
+| Mode | Batch Invariant | Singles (16 prompts) | Batch (16 prompts) | Overhead |
+|---|---|---|---|---|
+| Default (`max_num_seqs=256`) | No | 11.8s | 1.2s | — |
+| **`max_num_seqs=1`** | **Yes** | 11.8s | 12.1s | ~10x for batch |
+
+The overhead is significant for batch inference (sequences are processed sequentially),
+but singles performance is unchanged. This is the price of bit-exact batch invariance
+on NPU: the CANN matmul's M-dependent algorithm selection cannot be overridden, so
+sequences must be processed individually.
 
 ### Conclusion
 
-| Framework | Fix Effective | Root Cause |
-|---|---|---|
-| **HuggingFace** | **Yes** (bit-exact) | Matmul kernel selection (M-dependent gemv/gemm) |
-| **vLLM** | **No** | Scheduling layer (chunked prefill, PagedAttention) |
+| Framework | Fix | Batch Invariant | Overhead |
+|---|---|---|---|
+| **HuggingFace** | `aten::linear` per-sample patch | **Yes** (0/1319 mismatches) | ~1.3x |
+| **vLLM** | `max_num_seqs=1` | **Yes** (0/16 mismatches) | ~10x batch |
 
-The lightweight `aten::linear` fix fully resolves batch invariance for HuggingFace
-`AutoModelForCausalLM`, but vLLM requires fixes at the vLLM/vllm_ascend scheduling
-layer to achieve batch invariance. The matmul-level fix is necessary but not sufficient
-for vLLM.
+Both fixes address the same root cause: CANN's M-dimension-dependent algorithm
+selection in matmul. The HuggingFace fix can split 3D tensors `[B, seq, H]` into
+per-sample 2D `[seq, H]` calls. vLLM uses 2D packed tensors `[total_tokens, H]`,
+so the only way to ensure consistent M is to process one sequence at a time.

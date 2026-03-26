@@ -10,7 +10,7 @@ os.environ.setdefault("ASCEND_RT_VISIBLE_DEVICES", "0")
 import torch_npu
 from vllm import LLM, SamplingParams
 
-MODEL = "/home/bruceli/models/Qwen/Qwen3-4B"
+MODEL = "/home/bruceli/models/Qwen/Qwen3-4B-FP8-dequant"
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_DIR = os.path.join(PROJECT_DIR, "results", "fp8")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -26,7 +26,7 @@ kwargs = dict(model=MODEL, dtype="bfloat16", enforce_eager=True,
               tensor_parallel_size=1, max_model_len=4096,
               gpu_memory_utilization=0.9,
               enable_prefix_caching=False, enable_chunked_prefill=False,
-              quantization="fp8")
+              )
 
 def output_to_dict(output, idx, prompt):
     o = output.outputs[0]

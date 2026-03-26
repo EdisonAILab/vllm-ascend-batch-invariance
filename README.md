@@ -137,6 +137,8 @@ Each patch:
 
 ## Performance
 
+### TP=1 (single NPU)
+
 | Configuration | Time (16 prompts, 2048 tokens) | Batch Invariant? |
 |---|---|---|
 | Native vLLM (no fix) | ~112s batch | No (multiple failures) |
@@ -144,6 +146,22 @@ Each patch:
 | **Operator-level fixes** | **~112s batch** | **Yes, full speed** |
 
 The operator-level fixes achieve batch invariance with **zero throughput penalty** compared to native batching.
+
+### TP=4 (4 NPUs)
+
+| Configuration | Time (16 prompts, 2048 tokens) | Batch Invariant? |
+|---|---|---|
+| Native vLLM (no fix) | ~112s batch | No (3/4 failures) |
+| Operator fixes only | ~129s batch | **No** (16/16 failures) |
+| **Operator fixes + `max_num_seqs=1` + `HCCL_DETERMINISTIC=true`** | **~1350s (sequential)** | **Yes** |
+
+With TP>1, the operator-level fixes alone are insufficient. The TP allreduce path introduces additional M-dependent non-determinism when multiple sequences share a scheduling step. Setting `max_num_seqs=1` forces sequential processing, which combined with `HCCL_DETERMINISTIC=true` achieves bit-exact invariance at the cost of throughput.
+
+**Key findings for TP=4:**
+- Self-consistency is perfect (same prompt gives same result across runs)
+- `HCCL_DETERMINISTIC=true` is required (value must be `true`/`false`/`strict`, not `1`/`0`)
+- `allreduce` is M-invariant, but `reduce_scatter` shows M-dependence at M>=128
+- Full operator-level TP batch invariance without `max_num_seqs=1` remains an open problem
 
 ---
 
@@ -168,9 +186,13 @@ The operator-level fixes achieve batch invariance with **zero throughput penalty
 │   ├── test_addrmsnorm_boundary.py        # npu_add_rms_norm boundary finder
 │   └── test_fix_strategies.py             # Matmul fix strategy benchmarks
 ├── results/
-│   ├── singles_responses.json             # All single-prompt generated responses
-│   ├── batch_responses.json               # All batched generated responses
-│   └── comparison_summary.json            # Per-prompt comparison summary
+│   ├── singles_responses.json             # TP=1 single-prompt responses
+│   ├── batch_responses.json               # TP=1 batched responses
+│   ├── comparison_summary.json            # TP=1 per-prompt comparison
+│   └── tp4/                               # TP=4 results (max_num_seqs=1)
+│       ├── singles_responses.json
+│       ├── batch_responses.json
+│       └── comparison_summary.json
 └── archive/                               # Earlier experiment scripts
 ```
 

@@ -49,6 +49,17 @@ Prompt 15: tokens=OK  logprob_diff=0.00000000  gen=2048 toks  OK
 
 Full generated responses (single and batch) are saved in [`results/`](results/).
 
+### Additional Experiments (all PASS)
+
+| Experiment | Prompts | Config | Result |
+|---|---|---|---|
+| **Batch-64** | 64 | greedy, 256 tokens | **0/64 failures** |
+| **Non-greedy sampling** | 16 | temp=0.6, top_p=0.95, seed=42 | **0/16 failures** |
+| **Prefix caching** | 16 | enable_prefix_caching=True | **0/16 failures** |
+| **Chunked prefill** | 16 | enable_chunked_prefill=True | **0/16 failures** |
+
+The operator-level fixes are robust across batch sizes, sampling strategies, and vLLM scheduling modes.
+
 ---
 
 ## Problem

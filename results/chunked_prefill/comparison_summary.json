@@ -1,0 +1,129 @@
+{
+  "experiment": "Chunked prefill",
+  "model": "Qwen3-4B",
+  "num_prompts": 16,
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "total_generated_tokens": 3998,
+  "token_failures": 0,
+  "logprob_failures": 0,
+  "max_logprob_diff": 0.0,
+  "batch_invariant": true,
+  "time_singles_s": 123.5,
+  "time_batch_s": 14.2,
+  "speedup": 8.7,
+  "per_prompt": [
+    {
+      "prompt_idx": 0,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 1,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 2,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 3,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 4,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 5,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 6,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 7,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 8,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 9,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 10,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 11,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 158,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 12,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 13,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 14,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 15,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    }
+  ]
+}

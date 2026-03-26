@@ -1,0 +1,465 @@
+{
+  "experiment": "Batch-64 (256 tokens)",
+  "model": "Qwen3-4B",
+  "num_prompts": 64,
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "total_generated_tokens": 16286,
+  "token_failures": 0,
+  "logprob_failures": 0,
+  "max_logprob_diff": 0.0,
+  "batch_invariant": true,
+  "time_singles_s": 525.2,
+  "time_batch_s": 22.7,
+  "speedup": 23.2,
+  "per_prompt": [
+    {
+      "prompt_idx": 0,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 1,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 2,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 3,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 4,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 5,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 6,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 7,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 8,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 9,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 10,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 11,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 158,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 12,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 13,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 14,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 15,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 16,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 17,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 18,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 19,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 20,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 21,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 22,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 23,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 24,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 25,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 26,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 27,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 28,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 29,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 30,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 31,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 32,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 33,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 34,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 35,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 36,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 37,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 38,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 39,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 40,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 41,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 42,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 43,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 44,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 45,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 46,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 47,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 48,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 49,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 50,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 51,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 52,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 53,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 54,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 55,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 56,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 57,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 58,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 59,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 60,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 61,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 62,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    },
+    {
+      "prompt_idx": 63,
+      "tokens_match": true,
+      "logprob_max_diff": 0.0,
+      "num_tokens": 256,
+      "status": "OK"
+    }
+  ]
+}

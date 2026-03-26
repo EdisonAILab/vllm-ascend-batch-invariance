@@ -35,7 +35,7 @@ if "\nimport os\n" not in content:
 NPU_GEMM = '''
 
 # --- NPU batch-invariant matmul (chunk M to fixed size) ---
-_NPU_CHUNK_M = 128
+_NPU_CHUNK_M = int(os.environ.get("MATMUL_CHUNK_SIZE", "128"))
 
 def npu_batch_invariant_gemm(layer: torch.nn.Module,
                               x: torch.Tensor,

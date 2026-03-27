@@ -128,6 +128,7 @@ When batched, mixed scheduling triggers ChunkedPrefill (different kernel, differ
 | `_npu_flash_attention` | No | Multi-sequence | Per-sequence calls |
 | `_npu_paged_attention` | No | Multi-sequence | Per-sequence calls |
 | `npu_fused_infer_attention_score` | No | Different kernel | Replaced by flash/paged per-sequence |
+| `HCCL allreduce` (TP only) | No | M >= 412 rows | Chunk to 384 rows |
 
 ---
 
@@ -138,6 +139,7 @@ When batched, mixed scheduling triggers ChunkedPrefill (different kernel, differ
 | [`patches/patch_matmul_invariance.py`](patches/patch_matmul_invariance.py) | `vllm/.../layers/utils.py` | Replaces `dispatch_unquantized_gemm()` with M-chunked version (chunk=128) |
 | [`patches/patch_addrmsnorm_invariance.py`](patches/patch_addrmsnorm_invariance.py) | `vllm_ascend/.../ops/layernorm.py` | Decomposes fused `npu_add_rms_norm` into `add` + `npu_rms_norm` |
 | [`patches/patch_attention_invariance.py`](patches/patch_attention_invariance.py) | `vllm_ascend/.../attention/attention_v1.py` | Per-sequence attention for prefill, decode, and chunked prefill |
+| [`patches/patch_allreduce_invariance.py`](patches/patch_allreduce_invariance.py) | `vllm/.../distributed/communication_op.py` | Chunks allreduce to <=384 rows for TP>1 batch invariance |
 
 Each patch:
 - Creates a `.bak` backup before modifying
@@ -163,16 +165,16 @@ The operator-level fixes achieve batch invariance with **zero throughput penalty
 | Configuration | Time (16 prompts, 2048 tokens) | Batch Invariant? |
 |---|---|---|
 | Native vLLM (no fix) | ~112s batch | No (3/4 failures) |
-| Operator fixes only | ~129s batch | **No** (16/16 failures) |
-| **Operator fixes + `max_num_seqs=1` + `HCCL_DETERMINISTIC=true`** | **~1350s (sequential)** | **Yes** |
+| Operator fixes (3 patches) | ~129s batch | **No** (16/16 failures) |
+| **All 4 patches + `HCCL_DETERMINISTIC=true`** | **~1651s** | **Yes, 16/16 bit-exact** |
 
-With TP>1, the operator-level fixes alone are insufficient. The TP allreduce path introduces additional M-dependent non-determinism when multiple sequences share a scheduling step. Setting `max_num_seqs=1` forces sequential processing, which combined with `HCCL_DETERMINISTIC=true` achieves bit-exact invariance at the cost of throughput.
+**4th patch: HCCL allreduce chunking.** HCCL's allreduce is M-dependent at M>=412 rows (with hidden_size=2560, 4 ranks). Chunking allreduce to <=384 rows eliminates this. Requires `HCCL_DETERMINISTIC=true`.
 
 **Key findings for TP=4:**
-- Self-consistency is perfect (same prompt gives same result across runs)
 - `HCCL_DETERMINISTIC=true` is required (value must be `true`/`false`/`strict`, not `1`/`0`)
-- `allreduce` is M-invariant, but `reduce_scatter` shows M-dependence at M>=128
-- Full operator-level TP batch invariance without `max_num_seqs=1` remains an open problem
+- `allreduce` is M-dependent at M>=412 rows (~2 MB tensor threshold)
+- Chunked allreduce (384 rows) restores M-invariance
+- Self-consistency is perfect (same prompt gives same result across runs)
 
 ---
 

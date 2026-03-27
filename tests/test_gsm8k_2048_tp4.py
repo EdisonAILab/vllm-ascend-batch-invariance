@@ -66,7 +66,7 @@ LLM_KWARGS = dict(model=MODEL_PATH, dtype="bfloat16", enforce_eager=True,
                    gpu_memory_utilization=0.9,
                    enable_prefix_caching=False,
                    enable_chunked_prefill=False,
-                   max_num_seqs=1)
+                   )
 
 print("=" * 70)
 print("GSM8K Batch Invariance Test: TP=%d, max_tokens=%d" % (TP_SIZE, MAX_TOKENS))

@@ -9,8 +9,8 @@
   "logprob_failures": 0,
   "max_logprob_diff": 0.0,
   "batch_invariant": true,
-  "time_singles_s": 1346.7,
-  "time_batch_s": 1349.6,
+  "time_singles_s": 1657.9,
+  "time_batch_s": 1651.2,
   "speedup": 1.0,
   "env": {
     "HCCL_DETERMINISTIC": "true",

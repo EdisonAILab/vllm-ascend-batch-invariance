@@ -43,18 +43,31 @@ old_func = '''def tensor_model_parallel_all_reduce(input_: torch.Tensor) -> torc
 new_func = '''def tensor_model_parallel_all_reduce(input_: torch.Tensor) -> torch.Tensor:
     """All-reduce the input tensor across model parallel group.
 
-    When VLLM_NPU_BATCH_INVARIANT_MATMUL=1, chunks the allreduce to avoid
-    HCCL M-dependent behavior at large tensor sizes (M>=412 rows with 2560 hidden).
+    When VLLM_NPU_BATCH_INVARIANT_MATMUL=1, processes allreduce in fixed-size
+    chunks to ensure HCCL always sees the same tensor size regardless of M.
+    Each chunk is padded to exactly _ALLREDUCE_PAD rows, so the HCCL algorithm
+    selection is identical for every call. This makes the per-row allreduce
+    result independent of how many total rows are in the batch.
     """
     import os as _os
     if (_os.environ.get("VLLM_NPU_BATCH_INVARIANT_MATMUL", "0") == "1"
-            and input_.dim() == 2 and input_.shape[0] > 384
+            and input_.dim() == 2
             and get_tp_group().world_size > 1):
-        _ALLREDUCE_CHUNK = 384
-        M = input_.shape[0]
-        for s in range(0, M, _ALLREDUCE_CHUNK):
-            e = min(s + _ALLREDUCE_CHUNK, M)
-            input_[s:e] = get_tp_group().all_reduce(input_[s:e])
+        import torch as _torch
+        _ALLREDUCE_PAD = 384  # Fixed size: always below HCCL threshold (412)
+        M, H = input_.shape
+        for s in range(0, M, _ALLREDUCE_PAD):
+            e = min(s + _ALLREDUCE_PAD, M)
+            n = e - s
+            if n == _ALLREDUCE_PAD:
+                # Full chunk: allreduce in-place
+                input_[s:e] = get_tp_group().all_reduce(input_[s:e])
+            else:
+                # Partial chunk: pad to fixed size, allreduce, extract
+                padded = _torch.zeros(_ALLREDUCE_PAD, H, dtype=input_.dtype, device=input_.device)
+                padded[:n] = input_[s:e]
+                padded = get_tp_group().all_reduce(padded)
+                input_[s:e] = padded[:n]
         return input_
     return get_tp_group().all_reduce(input_)'''
 

@@ -162,18 +162,21 @@ The operator-level fixes achieve batch invariance with **zero throughput penalty
 
 ### TP=4 (4 NPUs)
 
-| Configuration | Time (16 prompts, 2048 tokens) | Batch Invariant? |
+| Configuration | Time (16 prompts, 256 tokens) | Batch Invariant? |
 |---|---|---|
-| Native vLLM (no fix) | ~112s batch | No (3/4 failures) |
-| Operator fixes (3 patches) | ~129s batch | **No** (16/16 failures) |
-| **All 4 patches + `HCCL_DETERMINISTIC=true`** | **~1651s** | **Yes, 16/16 bit-exact** |
+| Native vLLM (no fix) | ~19s batch | No (multiple failures) |
+| Operator fixes (3 patches only) | ~19s batch | **No** (16/16 failures) |
+| **All 4 patches + `HCCL_DETERMINISTIC=true`** | **~22s batch** | **Yes, 16/16 bit-exact** |
 
-**4th patch: HCCL allreduce chunking.** HCCL's allreduce is M-dependent at M>=412 rows (with hidden_size=2560, 4 ranks). Chunking allreduce to <=384 rows eliminates this. Requires `HCCL_DETERMINISTIC=true`.
+**Speedup: 11.2x** (singles=250s, batch=22s). The 4th patch (allreduce fixed-chunk) adds minimal overhead.
+
+**4th patch: HCCL allreduce fixed-chunk.** HCCL's allreduce is M-dependent at M>=412 rows (with hidden_size=2560, 4 ranks). Every allreduce call is processed in fixed-size chunks of exactly 384 rows (zero-padded for partial chunks), so HCCL always selects the same algorithm. Requires `HCCL_DETERMINISTIC=true`.
 
 **Key findings for TP=4:**
 - `HCCL_DETERMINISTIC=true` is required (value must be `true`/`false`/`strict`, not `1`/`0`)
 - `allreduce` is M-dependent at M>=412 rows (~2 MB tensor threshold)
-- Chunked allreduce (384 rows) restores M-invariance
+- Fixed-chunk allreduce (384 rows, zero-padded) restores M-invariance with near-zero overhead
+- Padding to variable sizes (e.g., next power-of-2) does NOT work — every call must see the same tensor shape
 - Self-consistency is perfect (same prompt gives same result across runs)
 
 ---
